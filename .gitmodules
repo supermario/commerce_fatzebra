@@ -1,0 +1,3 @@
+[submodule "fatzebra_php"]
+	path = fatzebra_php
+	url = git@github.com:supermario/PHP-Library.git
