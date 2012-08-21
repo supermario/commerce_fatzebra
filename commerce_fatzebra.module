@@ -97,7 +97,7 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
     'amount' => $charge['amount'] / 100,
     'reference' => $order->order_number . "-" . time(),
     'card_holder' => _commerce_fatzebra_get_order_name_line($order),
-    'card_number' => preg_replace('/[^\d]/','',$pane_values['credit_card']['number']),
+    'card_number' => preg_replace('/[^\d]/', '', $pane_values['credit_card']['number']),
     'card_expiry' => $pane_values['credit_card']['exp_month'] . "/" . $pane_values['credit_card']['exp_year'],
     'cvv' => $pane_values['credit_card']['code'],
   );
@@ -109,8 +109,8 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
 
   $process_result = _commerce_fatzebra_purchase_response_process($purchase_response);
 
-  if ($process_result !== true) {
-    drupal_set_message($process_result, 'error');
-    return false;
+  if ($process_result !== TRUE) {
+    drupal_set_message(check_plain($process_result), 'error');
+    return FALSE;
   }
 }
