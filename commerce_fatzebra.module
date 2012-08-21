@@ -90,7 +90,7 @@ function commerce_fatzebra_submit_form_validate($payment_method, $pane_form, $pa
  * Payment method callback: checkout form submission.
  */
 function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane_values, &$order, $charge) {
-  dpm(func_get_args());
+  // dpm(func_get_args());
   $purchase_request_values = array(
     'amount' => $charge['amount'] / 100,
     'reference' => $order->order_number . "-" . time(),
@@ -101,6 +101,10 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
   );
 
   $purchase_response = _commerce_fatzebra_purchase($purchase_request_values, $payment_method['settings']);
+
+  // add the order number so we're still able to log the transaction correctly if there is an API issue
+  $purchase_response->order_id = $order->order_number;
+
   _commerce_fatzebra_purchase_response_process($purchase_response);
 }
 
@@ -136,38 +140,41 @@ function _commerce_fatzebra_purchase($request_values, $settings) {
 
 function _commerce_fatzebra_purchase_response_process($response) {
 
-  $transaction = commerce_payment_transaction_new('commerce_fatzebra', $response->response->reference);
-  $transaction->amount = $response->response->amount;
-  $transaction->currency_code = $response->response->currency;
+  // dpm($response);
 
-  if (empty($errors) && $response->successful && $response->response->successful) {
+  $transaction = commerce_payment_transaction_new('commerce_fatzebra', $response->order_id);
+  $transaction->message_variables = array();
+  // Set the transaction message and tokens that will be recorded as a transaction against this order
+  $transaction->message = 'Transaction @status: @statusdetail.';
 
-    dpm("Response is successful");
-
+  // Set the transaction status and status text based on response success values
+  if ($response->successful && $response->response->successful) {
     $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
-
-    // $transaction->message = 'Status @status, @statusdetail. VPSTxId=@vpstxid. Auth Code=@authcode. Address Check: @address. Postcode Check: @postcode. AVSCV2 Result: @avs. 3D Secure: @tds';
-    // $transaction->message_variables =
-    // array(
-    //   '@status' => $tokens['Status'],
-    //   '@statusdetail' => $tokens['StatusDetail'],
-    //   '@vpstxid' => $tokens['VPSTxId'],
-    //   '@authcode' => $tokens['TxAuthNo'],
-    //   '@address' => $tokens['AddressResult'],
-    //   '@postcode' => $tokens['PostCodeResult'],
-    //   '@avs' => $tokens['AVSCV2'],
-    //   '@tds' => $tokens['3DSecureStatus'],
-    //   );
-
+    $transaction->message_variables['@status'] = 'success';
   } else {
-
-    dpm("Response was not successful");
     $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
-
+    $transaction->message_variables['@status'] = 'failed';
   }
 
-  // commerce_payment_transaction_save($transaction);
-  dpm($response);
+  if ($response->successful === false) {
+    // We have an API error
+    $transaction->message_variables['@statusdetail'] = implode(', ', $response->errors);
+  } else {
+    // API call was successful, so $response->response will be populated
+    $transaction->message_variables['@statusdetail'] = $response->response->message;
+
+    $transaction->amount = $response->response->amount;
+    $transaction->currency_code = $response->response->currency;
+    $transaction->remote_id = $response->response->reference;
+
+    // Set the transaction message and tokens that will be recorded as a transaction against this order
+    $transaction->message .= ' Card: @cardnumber';
+    $transaction->message_variables['@cardnumber'] = $response->response->card_number;
+  }
+
+  // dpm($transaction);
+
+  commerce_payment_transaction_save($transaction);
 }
 
 /**
