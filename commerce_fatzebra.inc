@@ -37,8 +37,9 @@ function commerce_fatzebra_purchase($request_values, $settings) {
 /**
  * Processes a Fat Zebra purchase response and create a transaction record.
  *
- * @return true|string: true if the purchase is successful, a string containing
- * an error message if unsuccessful
+ * @return true|string
+ *   true if the purchase is successful, a string containing an error message
+ *   if unsuccessful
  */
 function commerce_fatzebra_purchase_response_process($response) {
 
