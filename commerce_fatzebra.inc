@@ -11,7 +11,7 @@
  */
 function commerce_fatzebra_purchase($request_values, $settings) {
 
-  module_load_include('php', 'commerce_fatzebra', 'FatZebra.class');
+  module_load_include('php', 'commerce_fatzebra', 'includes/FatZebra.class');
 
   $purchase_request = new FatZebra\PurchaseRequest(
     $request_values['amount'],
