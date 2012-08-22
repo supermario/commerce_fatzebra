@@ -5,7 +5,7 @@
  * Provides a Fat Zebra payment method for Drupal Commerce.
  */
 
-// Fat Zebra static constants
+// Fat Zebra static constants.
 define('COMMERCE_FATZEBRA_TXN_MODE_LIVE', 'live');
 define('COMMERCE_FATZEBRA_TXN_MODE_SBOX', 'sbox');
 define('COMMERCE_FATZEBRA_GATEWAY_URL', 'https://gateway.sandbox.fatzebra.com.au');
@@ -60,7 +60,7 @@ function commerce_fatzebra_settings_form($settings = NULL) {
   $form['txn_mode'] = array(
     '#type' => 'radios',
     '#title' => t('Transaction mode'),
-    '#description' => t('Change to \'Live transactions\' when you are ready to start processing real payments.'),
+    '#description' => t("Change to 'Live transactions' when you are ready to start processing real payments."),
     '#options' => array(
       COMMERCE_FATZEBRA_TXN_MODE_LIVE => t('Live transactions'),
       COMMERCE_FATZEBRA_TXN_MODE_SBOX => t('Sandbox transactions'),
@@ -104,7 +104,8 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
 
   $purchase_response = commerce_fatzebra_purchase($purchase_request_values, $payment_method['settings']);
 
-  // add the order number so we're still able to log the transaction correctly if there is an API issue
+  // Add the order number so we're still able to log the transaction correctly
+  // if there is an API issue.
   $purchase_response->order_id = $order->order_number;
 
   $process_result = commerce_fatzebra_purchase_response_process($purchase_response);

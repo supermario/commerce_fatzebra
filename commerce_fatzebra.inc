@@ -6,8 +6,7 @@
  */
 
 /**
- * Makes a purchase request and returns a Fat Zebra purchase request response object
- * @DOCUMENTATION should specify required keys in request_values
+ * Makes a purchase request and returns a Fat Zebra purchase request response object.
  */
 function commerce_fatzebra_purchase($request_values, $settings) {
 
@@ -22,7 +21,7 @@ function commerce_fatzebra_purchase($request_values, $settings) {
     $request_values['cvv']
   );
 
-  // for any non-live setting, use true (test mode)
+  // For any non-live setting, use true (test mode).
   $transaction_mode = ($settings['txn_mode'] == COMMERCE_FATZEBRA_TXN_MODE_LIVE) ? FALSE : TRUE ;
 
   $gw = new FatZebra\Gateway(
@@ -36,55 +35,61 @@ function commerce_fatzebra_purchase($request_values, $settings) {
 }
 
 /**
- * Processes a Fat Zebra purchase response, and create a transaction record for the related order
- * Returns true if the purchase is successful, or a string containing an error message if unsuccessful
+ * Processes a Fat Zebra purchase response and create a transaction record
+ * @return string|true: true if the purchase is successful, a string containing an error message if unsuccessful
  */
 function commerce_fatzebra_purchase_response_process($response) {
 
   $process_result = TRUE;
 
-  // Create a new transaction object for the current order
+  // Create a new transaction object for the current order.
   $transaction = commerce_payment_transaction_new('commerce_fatzebra', $response->order_id);
-  // Set the message that will be recorded for this transaction
+
+  // Set the message that will be recorded for this transaction.
   $transaction->message = 'Transaction @status: @statusdetail.';
   $transaction->message_variables = array();
 
-  // Set the transaction status and status text based on response success values
+  // Set the transaction status and status text based on response success values.
   if ($response->successful && $response->response->successful) {
     // Our payment was successful
     $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
     $transaction->message_variables['@status'] = 'success';
   }
   else {
-    // Our payment was unsuccessful, or we received an API error
+    // Our payment was unsuccessful, or we received an API error.
     $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
     $transaction->message_variables['@status'] = 'failed';
   }
 
   if ($response->successful === FALSE) {
 
-    // We have an API error, set an error message to be displayed to the user
+    // We have an API error, set an error message to be displayed to the user.
     $transaction->message_variables['@statusdetail'] = implode(', ', $response->errors);
     $process_result = t("There was a problem communicating with the payment gateway. Please try again or contact @site_mail for help.", array('@site_mail' => variable_get('site_mail', '')));
     watchdog('commerce_fatzebra', 'API Error: @response', array('@response' => print_r($response, TRUE)), WATCHDOG_ERROR);
 
   }
   else {
-    // API call was successful, so $response->response will be populated
+    // API call was successful, so $response->response will be populated.
     $transaction->message_variables['@statusdetail'] = $response->response->message;
 
     $transaction->amount = $response->response->amount;
     $transaction->currency_code = $response->response->currency;
     $transaction->remote_id = $response->response->id;
 
-    // Set the transaction message and tokens that will be recorded as a transaction against this order
+    // Set the transaction message and tokens that will be recorded as a
+    // transaction against this order
     $transaction->message .= ' Card: @cardnumber, Reference: @reference';
     $transaction->message_variables['@cardnumber'] = $response->response->card_number;
     $transaction->message_variables['@reference'] = $response->response->reference;
 
-    // If the transaction was not successful, set an error message to be displayed to the user
+    // If the transaction was not successful, set an error message to be
+    // displayed to the user
     if ($response->response->successful === FALSE) {
-      $process_result = t("There was a problem with your transaction: @message. Please try again or contact @site_mail for help.", array('@site_mail' => variable_get('site_mail', ''), '@message' => $response->response->message));
+      $process_result = t("There was a problem with your transaction: @message. Please try again or contact @site_mail for help.", array(
+        '@site_mail' => variable_get('site_mail', ''),
+        '@message' => $response->response->message)
+      );
       watchdog('commerce_fatzebra', 'Transaction Error: @response', array('@response' => print_r($response, TRUE)), WATCHDOG_ERROR);
     }
 
@@ -96,7 +101,7 @@ function commerce_fatzebra_purchase_response_process($response) {
 }
 
 /**
- * Given an order, returns the order's profile's name_line value
+ * Given an order, returns the order's profile's name_line value.
  */
 function commerce_fatzebra_get_order_name_line($order) {
   $customer_profile = commerce_customer_profile_load($order->commerce_customer_billing['und'][0]['profile_id']);

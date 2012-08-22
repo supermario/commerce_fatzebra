@@ -1,9 +1,9 @@
-name = Fat Zebra Integration for Drupal Commerce
-description = Provides integration for the Fat Zebra payment gateway (http://www.fatzebra.com.au)
+name = Commerce Fat Zebra
+description = Provides Commerce integration for the Fat Zebra payment gateway (http://www.fatzebra.com.au)
 package = Commerce (contrib)
 dependencies[] = commerce
 dependencies[] = commerce_payment
 core = 7.x
 
 ; Base module files
-files[] = commerce_sagepay_direct.module
+files[] = commerce_fatzebra.module
