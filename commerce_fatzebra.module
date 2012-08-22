@@ -7,8 +7,9 @@
 
 // Fat Zebra static constants.
 define('COMMERCE_FATZEBRA_TXN_MODE_LIVE', 'live');
-define('COMMERCE_FATZEBRA_TXN_MODE_SBOX', 'sbox');
-define('COMMERCE_FATZEBRA_GATEWAY_URL', 'https://gateway.sandbox.fatzebra.com.au');
+define('COMMERCE_FATZEBRA_TXN_MODE_TEST', 'test');
+define('COMMERCE_FATZEBRA_GATEWAY_URL_LIVE', 'https://gateway.fatzebra.com.au');
+define('COMMERCE_FATZEBRA_GATEWAY_URL_SBOX', 'https://gateway.sandbox.fatzebra.com.au');
 
 /**
  * Implements hook_commerce_payment_method_info().
@@ -38,7 +39,8 @@ function commerce_fatzebra_settings_form($settings = NULL) {
   $settings = (array) $settings + array(
     'username' => 'TEST',
     'token' => 'TEST',
-    'txn_mode' => COMMERCE_FATZEBRA_TXN_MODE_SBOX,
+    'gateway' => COMMERCE_FATZEBRA_GATEWAY_URL_SBOX,
+    'txn_mode' => COMMERCE_FATZEBRA_TXN_MODE_TEST
   );
 
   $form['username'] = array(
@@ -57,13 +59,24 @@ function commerce_fatzebra_settings_form($settings = NULL) {
     '#required' => TRUE,
   );
 
+  $form['gateway'] = array(
+    '#type' => 'radios',
+    '#title' => t('Gateway'),
+    '#description' => t("Change to 'Live gateway' when you are ready to use your live Fat Zebra gateway."),
+    '#options' => array(
+      COMMERCE_FATZEBRA_GATEWAY_URL_LIVE => t('Live gateway'),
+      COMMERCE_FATZEBRA_GATEWAY_URL_SBOX => t('Sandbox gateway'),
+    ),
+    '#default_value' => $settings['gateway'],
+  );
+
   $form['txn_mode'] = array(
     '#type' => 'radios',
     '#title' => t('Transaction mode'),
-    '#description' => t("Change to 'Live transactions' when you are ready to start processing real payments."),
+    '#description' => t("Using 'Test mode' with 'Live gateway' will cause transactions to show on your Fat Zebra dashboard, but not be processed by the bank."),
     '#options' => array(
-      COMMERCE_FATZEBRA_TXN_MODE_LIVE => t('Live transactions'),
-      COMMERCE_FATZEBRA_TXN_MODE_SBOX => t('Sandbox transactions'),
+      COMMERCE_FATZEBRA_TXN_MODE_LIVE => t('Live mode'),
+      COMMERCE_FATZEBRA_TXN_MODE_TEST => t('Test mode'),
     ),
     '#default_value' => $settings['txn_mode'],
   );

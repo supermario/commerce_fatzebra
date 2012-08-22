@@ -28,7 +28,7 @@ function commerce_fatzebra_purchase($request_values, $settings) {
     $settings['username'],
     $settings['token'],
     $transaction_mode,
-    COMMERCE_FATZEBRA_GATEWAY_URL
+    $settings['gateway']
   );
   $gw->timeout = 30;
   return $gw->purchase($purchase_request);
@@ -36,7 +36,7 @@ function commerce_fatzebra_purchase($request_values, $settings) {
 
 /**
  * Processes a Fat Zebra purchase response and create a transaction record
- * @return string|true: true if the purchase is successful, a string containing an error message if unsuccessful
+ * @return true|string: true if the purchase is successful, a string containing an error message if unsuccessful
  */
 function commerce_fatzebra_purchase_response_process($response) {
 
