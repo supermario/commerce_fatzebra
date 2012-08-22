@@ -23,13 +23,13 @@ function commerce_fatzebra_purchase($request_values, $settings) {
   );
 
   // for any non-live setting, use true (test mode)
-  $transaction_mode = ($settings['txn_mode'] == FATZEBRA_TXN_MODE_LIVE) ? FALSE : TRUE ;
+  $transaction_mode = ($settings['txn_mode'] == COMMERCE_FATZEBRA_TXN_MODE_LIVE) ? FALSE : TRUE ;
 
   $gw = new FatZebra\Gateway(
     $settings['username'],
     $settings['token'],
     $transaction_mode,
-    FATZEBRA_GATEWAY_URL
+    COMMERCE_FATZEBRA_GATEWAY_URL
   );
   $gw->timeout = 30;
   return $gw->purchase($purchase_request);

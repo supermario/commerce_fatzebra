@@ -5,10 +5,10 @@
  * Provides a Fat Zebra payment method for Drupal Commerce.
  */
 
-// Fat Zebra transaction mode definitions.
-define('FATZEBRA_TXN_MODE_LIVE', 'live');
-define('FATZEBRA_TXN_MODE_SBOX', 'sbox');
-define('FATZEBRA_GATEWAY_URL', 'https://gateway.sandbox.fatzebra.com.au');
+// Fat Zebra static constants
+define('COMMERCE_FATZEBRA_TXN_MODE_LIVE', 'live');
+define('COMMERCE_FATZEBRA_TXN_MODE_SBOX', 'sbox');
+define('COMMERCE_FATZEBRA_GATEWAY_URL', 'https://gateway.sandbox.fatzebra.com.au');
 
 /**
  * Implements hook_commerce_payment_method_info().
@@ -38,7 +38,7 @@ function commerce_fatzebra_settings_form($settings = NULL) {
   $settings = (array) $settings + array(
     'username' => 'TEST',
     'token' => 'TEST',
-    'txn_mode' => FATZEBRA_TXN_MODE_SBOX,
+    'txn_mode' => COMMERCE_FATZEBRA_TXN_MODE_SBOX,
   );
 
   $form['username'] = array(
@@ -62,8 +62,8 @@ function commerce_fatzebra_settings_form($settings = NULL) {
     '#title' => t('Transaction mode'),
     '#description' => t('Change to \'Live transactions\' when you are ready to start processing real payments.'),
     '#options' => array(
-      FATZEBRA_TXN_MODE_LIVE => t('Live transactions'),
-      FATZEBRA_TXN_MODE_SBOX => t('Sandbox transactions'),
+      COMMERCE_FATZEBRA_TXN_MODE_LIVE => t('Live transactions'),
+      COMMERCE_FATZEBRA_TXN_MODE_SBOX => t('Sandbox transactions'),
     ),
     '#default_value' => $settings['txn_mode'],
   );
