@@ -8,10 +8,15 @@ This module is sponsored by Morgan (http://morgan.net.au) and Fat Zebra
 INSTALLATION
 ------------
 
+- Download the following files and place them the includes folder
+    FatZebra PHP API class file
+    https://raw.github.com/fatzebra/PHP-Library/master/FatZebra.class.php
+    FatZebra CA certs .pem
+    https://raw.github.com/fatzebra/PHP-Library/master/cacert.pem
 - Install the Commerce Fat Zebra module
 - Enable Fat Zebra Integration under Store > Configuration > Payment methods
 - Edit the Payment method's action to configure payment settings, and to set
-username/token if you have a Fat Zebra account
+  username/token if you have a Fat Zebra account
 
 TESTING
 -------
