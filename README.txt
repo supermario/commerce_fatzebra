@@ -8,7 +8,7 @@ This module is sponsored by Morgan (http://morgan.net.au) and Fat Zebra
 INSTALLATION
 ------------
 
-- Download the following files and place them the includes folder
+- Download the following files into the commerce_fatzebra/includes folder:
     FatZebra PHP API class file
     https://raw.github.com/fatzebra/PHP-Library/master/FatZebra.class.php
     FatZebra CA certs .pem
