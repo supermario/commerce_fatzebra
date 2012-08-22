@@ -9,7 +9,7 @@
  * Makes a purchase request and returns a Fat Zebra purchase request response object
  * @DOCUMENTATION should specify required keys in request_values
  */
-function _commerce_fatzebra_purchase($request_values, $settings) {
+function commerce_fatzebra_purchase($request_values, $settings) {
 
   module_load_include('php', 'commerce_fatzebra', 'FatZebra.class');
 
@@ -39,7 +39,7 @@ function _commerce_fatzebra_purchase($request_values, $settings) {
  * Processes a Fat Zebra purchase response, and create a transaction record for the related order
  * Returns true if the purchase is successful, or a string containing an error message if unsuccessful
  */
-function _commerce_fatzebra_purchase_response_process($response) {
+function commerce_fatzebra_purchase_response_process($response) {
 
   $process_result = TRUE;
 
@@ -98,7 +98,7 @@ function _commerce_fatzebra_purchase_response_process($response) {
 /**
  * Given an order, returns the order's profile's name_line value
  */
-function _commerce_fatzebra_get_order_name_line($order) {
+function commerce_fatzebra_get_order_name_line($order) {
   $customer_profile = commerce_customer_profile_load($order->commerce_customer_billing['und'][0]['profile_id']);
   return $customer_profile->commerce_customer_address['und'][0]['name_line'];
 }
