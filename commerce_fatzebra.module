@@ -40,7 +40,7 @@ function commerce_fatzebra_settings_form($settings = NULL) {
     'username' => 'TEST',
     'token' => 'TEST',
     'gateway' => COMMERCE_FATZEBRA_GATEWAY_URL_SBOX,
-    'txn_mode' => COMMERCE_FATZEBRA_TXN_MODE_TEST
+    'txn_mode' => COMMERCE_FATZEBRA_TXN_MODE_TEST,
   );
 
   $form['username'] = array(

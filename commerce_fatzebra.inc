@@ -6,7 +6,7 @@
  */
 
 /**
- * Makes a purchase request and returns a Fat Zebra purchase request response object.
+ * Makes a purchase request and returns a purchase request response object.
  */
 function commerce_fatzebra_purchase($request_values, $settings) {
 
@@ -22,7 +22,7 @@ function commerce_fatzebra_purchase($request_values, $settings) {
   );
 
   // For any non-live setting, use true (test mode).
-  $transaction_mode = ($settings['txn_mode'] == COMMERCE_FATZEBRA_TXN_MODE_LIVE) ? FALSE : TRUE ;
+  $transaction_mode = ($settings['txn_mode'] == COMMERCE_FATZEBRA_TXN_MODE_LIVE) ? FALSE : TRUE;
 
   $gw = new FatZebra\Gateway(
     $settings['username'],
@@ -35,8 +35,10 @@ function commerce_fatzebra_purchase($request_values, $settings) {
 }
 
 /**
- * Processes a Fat Zebra purchase response and create a transaction record
- * @return true|string: true if the purchase is successful, a string containing an error message if unsuccessful
+ * Processes a Fat Zebra purchase response and create a transaction record.
+ *
+ * @return true|string: true if the purchase is successful, a string containing
+ * an error message if unsuccessful
  */
 function commerce_fatzebra_purchase_response_process($response) {
 
@@ -49,9 +51,9 @@ function commerce_fatzebra_purchase_response_process($response) {
   $transaction->message = 'Transaction @status: @statusdetail.';
   $transaction->message_variables = array();
 
-  // Set the transaction status and status text based on response success values.
+  // Set the transaction status and text based on response success values.
   if ($response->successful && $response->response->successful) {
-    // Our payment was successful
+    // Our payment was successful.
     $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
     $transaction->message_variables['@status'] = 'success';
   }
@@ -78,13 +80,13 @@ function commerce_fatzebra_purchase_response_process($response) {
     $transaction->remote_id = $response->response->id;
 
     // Set the transaction message and tokens that will be recorded as a
-    // transaction against this order
+    // transaction against this order.
     $transaction->message .= ' Card: @cardnumber, Reference: @reference';
     $transaction->message_variables['@cardnumber'] = $response->response->card_number;
     $transaction->message_variables['@reference'] = $response->response->reference;
 
     // If the transaction was not successful, set an error message to be
-    // displayed to the user
+    // displayed to the user.
     if ($response->response->successful === FALSE) {
       $process_result = t("There was a problem with your transaction: @message. Please try again or contact @site_mail for help.", array(
         '@site_mail' => variable_get('site_mail', ''),
