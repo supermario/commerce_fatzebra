@@ -15,6 +15,7 @@ define('COMMERCE_FATZEBRA_GATEWAY_URL_SBOX', 'https://gateway.sandbox.fatzebra.c
  * Implements hook_requirements().
  */
 function commerce_fatzebra_requirements($phase) {
+  module_load_include('inc', 'commerce_fatzebra', 'commerce_fatzebra');
   $requirements = array();
   if ($phase == 'runtime') {
 

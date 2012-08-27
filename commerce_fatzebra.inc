@@ -118,7 +118,7 @@ function commerce_fatzebra_get_order_name_line($order) {
  */
 function commerce_fatzebra_includes_exist() {
   $module_path = drupal_get_path('module','commerce_fatzebra');
-  $required_files = array('FafZebra.class.php', 'cacert.pem');
+  $required_files = array('FatZebra.class.php', 'cacert.pem');
   foreach ($required_files as $required_file) {
     if (!file_exists("$module_path/includes/$required_file")) {
       return false;
