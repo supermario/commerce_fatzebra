@@ -96,7 +96,15 @@ function commerce_fatzebra_submit_form($payment_method, $pane_values, $checkout_
  * Payment method callback: checkout form validation.
  */
 function commerce_fatzebra_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
-  // @STUB: some validation should happen here
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+
+  $settings = array(
+    'form_parents' => array_merge($form_parents, array('credit_card')),
+  );
+
+  if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
+    return FALSE;
+  }
 }
 
 /**
