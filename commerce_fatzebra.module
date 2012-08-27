@@ -12,6 +12,29 @@ define('COMMERCE_FATZEBRA_GATEWAY_URL_LIVE', 'https://gateway.fatzebra.com.au');
 define('COMMERCE_FATZEBRA_GATEWAY_URL_SBOX', 'https://gateway.sandbox.fatzebra.com.au');
 
 /**
+ * Implements hook_requirements().
+ */
+function commerce_fatzebra_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'runtime') {
+
+    $requirements['commerce_fatzebra'] = array(
+      'title' => t("Commerce Fat Zebra includes"),
+    );
+
+    if (!commerce_fatzebra_includes_exist()) {
+      $requirements['commerce_fatzebra']['value'] = t('Not found');
+      $requirements['commerce_fatzebra']['description'] = t("The required FatZebra PHP API class (FatZebra.class.php) and FatZebra CA certs (cacert.pem) files are missing from the includes folder. Please see the Commerce Fat Zebra module's includes/README.txt");
+      $requirements['commerce_fatzebra']['severity'] = REQUIREMENT_ERROR;
+    } else {
+      $requirements['commerce_fatzebra']['value'] = t('Found');
+      $requirements['commerce_fatzebra']['severity'] = REQUIREMENT_OK;
+    }
+  }
+  return $requirements;
+}
+
+/**
  * Implements hook_commerce_payment_method_info().
  */
 function commerce_fatzebra_commerce_payment_method_info() {
