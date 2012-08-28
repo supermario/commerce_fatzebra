@@ -126,20 +126,3 @@ function commerce_fatzebra_get_order_name_line($order) {
   $customer_profile = commerce_customer_profile_load($order->commerce_customer_billing['und'][0]['profile_id']);
   return $customer_profile->commerce_customer_address['und'][0]['name_line'];
 }
-
-/**
- * Check if the required external files exist in the includes folder.
- *
- * @return boolean
- *   true if required includes exist, false otherwise
- */
-function commerce_fatzebra_includes_exist() {
-  $module_path = drupal_get_path('module', 'commerce_fatzebra');
-  $required_files = array('FatZebra.class.php', 'cacert.pem');
-  foreach ($required_files as $required_file) {
-    if (!file_exists("$module_path/includes/$required_file")) {
-      return FALSE;
-    }
-  }
-  return TRUE;
-}

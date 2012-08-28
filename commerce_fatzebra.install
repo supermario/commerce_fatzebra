@@ -1,26 +1,49 @@
 <?php
 
 /**
+ * @file
+ * Checks for Commerce Fat Zebra include requirements
+ */
+
+/**
  * Implements hook_requirements().
  */
 function commerce_fatzebra_requirements($phase) {
-  module_load_include('inc', 'commerce_fatzebra', 'commerce_fatzebra');
+
   $requirements = array();
-  if ($phase == 'runtime') {
+  // Ensure translations don't break at install time
+  $t = get_t();
 
-    $requirements['commerce_fatzebra'] = array(
-      'title' => t("Commerce Fat Zebra includes"),
-    );
+  $requirements['commerce_fatzebra'] = array(
+    'title' => st("Commerce Fat Zebra includes"),
+  );
 
-    if (!commerce_fatzebra_includes_exist()) {
-      $requirements['commerce_fatzebra']['value'] = t('Not found');
-      $requirements['commerce_fatzebra']['description'] = t("Required FatZebra PHP API class (FatZebra.class.php) and FatZebra CA certs (cacert.pem) files are missing. Please see the Commerce Fat Zebra module's includes/README.txt");
-      $requirements['commerce_fatzebra']['severity'] = REQUIREMENT_ERROR;
-    }
-    else {
-      $requirements['commerce_fatzebra']['value'] = t('Found');
-      $requirements['commerce_fatzebra']['severity'] = REQUIREMENT_OK;
+  if (!commerce_fatzebra_includes_exist()) {
+    $requirements['commerce_fatzebra']['value'] = $t('Not found');
+    $requirements['commerce_fatzebra']['description'] = $t("Required FatZebra PHP API class (FatZebra.class.php) and FatZebra CA certs (cacert.pem) files are missing. Please see the Commerce Fat Zebra module's includes/README.txt");
+    $requirements['commerce_fatzebra']['severity'] = REQUIREMENT_ERROR;
+  }
+  else {
+    $requirements['commerce_fatzebra']['value'] = $t('Found');
+    $requirements['commerce_fatzebra']['severity'] = REQUIREMENT_OK;
+  }
+
+  return $requirements;
+}
+
+/**
+ * Check if the required external files exist in the includes folder.
+ *
+ * @return boolean
+ *   true if required includes exist, false otherwise
+ */
+function commerce_fatzebra_includes_exist() {
+  $module_path = drupal_get_path('module', 'commerce_fatzebra');
+  $required_files = array('FatZebra.class.php', 'cacert.pem');
+  foreach ($required_files as $required_file) {
+    if (!file_exists("$module_path/includes/$required_file")) {
+      return FALSE;
     }
   }
-  return $requirements;
+  return TRUE;
 }
