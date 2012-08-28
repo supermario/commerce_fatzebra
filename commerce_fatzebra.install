@@ -9,13 +9,12 @@
  * Implements hook_requirements().
  */
 function commerce_fatzebra_requirements($phase) {
-
-  $requirements = array();
-  // Ensure translations don't break at install time
+  // Ensure translations don't break at install time.
   $t = get_t();
 
+  $requirements = array();
   $requirements['commerce_fatzebra'] = array(
-    'title' => st("Commerce Fat Zebra includes"),
+    'title' => $t("Commerce Fat Zebra includes"),
   );
 
   if (!commerce_fatzebra_includes_exist()) {
