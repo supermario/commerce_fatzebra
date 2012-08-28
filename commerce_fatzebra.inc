@@ -7,6 +7,17 @@
 
 /**
  * Makes a purchase request and returns a purchase request response object.
+ *
+ * @param $request_values
+ *   An associative array containing:
+ *     - amount: A float value of the purchase amount i.e. 142.33
+ *     - reference: A string containing a unique reference for this transaction
+ *     - card_holder: A string containing the name of the card holder
+ *     - card_number: A string containing the card number
+ *     - card_expiry: A string containing the cvv code
+ *
+ * @return object
+ *   An object representing the JSON response received from the Fat Zebra API
  */
 function commerce_fatzebra_purchase($request_values, $settings) {
 
@@ -36,6 +47,11 @@ function commerce_fatzebra_purchase($request_values, $settings) {
 
 /**
  * Processes a Fat Zebra purchase response and create a transaction record.
+ *
+ * @param $response
+ *   An object representing JSON response from a Fat Zebra API purchase request
+ *     - order_id: must be added manually in order to correctly record the
+ *       transaction against an order
  *
  * @return true|string
  *   true if the purchase is successful, a string containing an error message

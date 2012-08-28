@@ -25,7 +25,7 @@ function commerce_fatzebra_requirements($phase) {
 
     if (!commerce_fatzebra_includes_exist()) {
       $requirements['commerce_fatzebra']['value'] = t('Not found');
-      $requirements['commerce_fatzebra']['description'] = t("The required FatZebra PHP API class (FatZebra.class.php) and FatZebra CA certs (cacert.pem) files are missing from the includes folder. Please see the Commerce Fat Zebra module's includes/README.txt");
+      $requirements['commerce_fatzebra']['description'] = t("Required FatZebra PHP API class (FatZebra.class.php) and FatZebra CA certs (cacert.pem) files are missing. Please see the Commerce Fat Zebra module's includes/README.txt");
       $requirements['commerce_fatzebra']['severity'] = REQUIREMENT_ERROR;
     } else {
       $requirements['commerce_fatzebra']['value'] = t('Found');
