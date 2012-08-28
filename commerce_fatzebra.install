@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * Implements hook_requirements().
+ */
+function commerce_fatzebra_requirements($phase) {
+  module_load_include('inc', 'commerce_fatzebra', 'commerce_fatzebra');
+  $requirements = array();
+  if ($phase == 'runtime') {
+
+    $requirements['commerce_fatzebra'] = array(
+      'title' => t("Commerce Fat Zebra includes"),
+    );
+
+    if (!commerce_fatzebra_includes_exist()) {
+      $requirements['commerce_fatzebra']['value'] = t('Not found');
+      $requirements['commerce_fatzebra']['description'] = t("Required FatZebra PHP API class (FatZebra.class.php) and FatZebra CA certs (cacert.pem) files are missing. Please see the Commerce Fat Zebra module's includes/README.txt");
+      $requirements['commerce_fatzebra']['severity'] = REQUIREMENT_ERROR;
+    }
+    else {
+      $requirements['commerce_fatzebra']['value'] = t('Found');
+      $requirements['commerce_fatzebra']['severity'] = REQUIREMENT_OK;
+    }
+  }
+  return $requirements;
+}

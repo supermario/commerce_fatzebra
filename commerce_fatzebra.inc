@@ -8,7 +8,7 @@
 /**
  * Makes a purchase request and returns a purchase request response object.
  *
- * @param $request_values
+ * @param array $request_values
  *   An associative array containing:
  *     - amount: A float value of the purchase amount i.e. 142.33
  *     - reference: A string containing a unique reference for this transaction
@@ -48,7 +48,7 @@ function commerce_fatzebra_purchase($request_values, $settings) {
 /**
  * Processes a Fat Zebra purchase response and create a transaction record.
  *
- * @param $response
+ * @param object $response
  *   An object representing JSON response from a Fat Zebra API purchase request
  *     - order_id: must be added manually in order to correctly record the
  *       transaction against an order
@@ -128,17 +128,18 @@ function commerce_fatzebra_get_order_name_line($order) {
 }
 
 /**
- * Check if the required external files exist in the includes folder
+ * Check if the required external files exist in the includes folder.
  *
  * @return boolean
+ *   true if required includes exist, false otherwise
  */
 function commerce_fatzebra_includes_exist() {
-  $module_path = drupal_get_path('module','commerce_fatzebra');
+  $module_path = drupal_get_path('module', 'commerce_fatzebra');
   $required_files = array('FatZebra.class.php', 'cacert.pem');
   foreach ($required_files as $required_file) {
     if (!file_exists("$module_path/includes/$required_file")) {
-      return false;
+      return FALSE;
     }
   }
-  return true;
+  return TRUE;
 }
