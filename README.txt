@@ -5,6 +5,7 @@ for Drupal Commerce.
 This module is sponsored by Morgan (http://morgan.net.au) and Fat Zebra
 (https://fatzebra.com.au).
 
+
 INSTALLATION
 ------------
 
@@ -17,6 +18,10 @@ INSTALLATION
 - Enable Fat Zebra Integration under Store > Configuration > Payment methods
 - Edit the Payment method's action to configure payment settings, and to set
   username/token if you have a Fat Zebra account
+- Ensure your Default store currency is AUD under Store > Configuration >
+  Currency settings. The Commerce Fat Zebra payment method will not show for
+  non-AUD currency orders.
+
 
 TESTING
 -------
