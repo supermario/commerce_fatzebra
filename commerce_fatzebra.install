@@ -19,7 +19,7 @@ function commerce_fatzebra_requirements($phase) {
   );
 
   if (($library = libraries_detect('fatzebra_php')) && !empty($library['installed'])) {
-    $requirements['commerce_fatzebra']['value'] = $t('Found');
+    $requirements['commerce_fatzebra']['value'] = l($library['version'], $library['download url']);
     $requirements['commerce_fatzebra']['severity'] = REQUIREMENT_OK;
   }
   else {
