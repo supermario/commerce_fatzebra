@@ -21,7 +21,7 @@
  */
 function commerce_fatzebra_purchase($request_values, $settings) {
 
-  require_once 'includes/FatZebra.class';
+  libraries_load('fatzebra_php');
 
   $purchase_request = new FatZebra\PurchaseRequest(
     $request_values['amount'],

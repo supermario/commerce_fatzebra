@@ -12,6 +12,32 @@ define('COMMERCE_FATZEBRA_GATEWAY_URL_LIVE', 'https://gateway.fatzebra.com.au');
 define('COMMERCE_FATZEBRA_GATEWAY_URL_SBOX', 'https://gateway.sandbox.fatzebra.com.au');
 
 /**
+ * Implements hook_libraries_info().
+ */
+function commerce_fatzebra_libraries_info() {
+  $libraries = array();
+
+  $libraries['fatzebra_php'] = array(
+    'name' => 'Fat Zebra PHP Library',
+    'vendor url' => 'https://fatzebra.com.au',
+    'download url' => 'https://github.com/fatzebra/PHP-Library',
+    'version arguments' => array(
+      'file' => 'README.markdown',
+      'pattern' => '/Release ([\.\d]+)/',
+      'lines' => 4,
+    ),
+    'files' => array(
+      'php' => array(
+        'FatZebra.class.php',
+        'cacert.pem',
+      ),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
  * Implements hook_commerce_payment_method_info().
  */
 function commerce_fatzebra_commerce_payment_method_info() {

@@ -9,13 +9,11 @@ This module is sponsored by Morgan (http://morgan.net.au) and Fat Zebra
 INSTALLATION
 ------------
 
-- Download the following files into the commerce_fatzebra/includes folder:
-    FatZebra PHP API class file
-    https://raw.github.com/fatzebra/PHP-Library/master/FatZebra.class.php
-    FatZebra CA certs .pem
-    https://raw.github.com/fatzebra/PHP-Library/master/cacert.pem
-- Install the Commerce Fat Zebra module
-- Enable Fat Zebra Integration under Store > Configuration > Payment methods
+- Download the FatZebra PHP Library into sites/all/libraries/fatzebra_php or
+  sites/<domain>/libraries/fatzebra_php
+    (https://github.com/fatzebra/PHP-Library/zipball/master)
+- Enable the Commerce Fat Zebra module and its dependencies
+- Enable the payment method under Store > Configuration > Payment methods
 - Edit the Payment method's action to configure payment settings, and to set
   username/token if you have a Fat Zebra account
 - Ensure your Default store currency is AUD under Store > Configuration >
@@ -29,6 +27,8 @@ TESTING
 Nothing further is required to fully test the module against the sandbox
 environment (module defaults to test credentials), however you will not have
 access to the Fat Zebra dashboard to see transaction summaries.
+
+See http://docs.fatzebra.com.au/ for test credit card numbers.
 
 If you'd like to get a Fat Zebra account you can sign up
 (https://www.fatzebra.com.au/register/solo) for free to get started.

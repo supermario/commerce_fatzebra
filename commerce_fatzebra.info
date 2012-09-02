@@ -1,6 +1,7 @@
 name = Commerce Fat Zebra
 description = Provides Commerce integration for the Fat Zebra payment gateway (http://www.fatzebra.com.au)
 package = Commerce (contrib)
+dependencies[] = libraries
 dependencies[] = commerce
 dependencies[] = commerce_payment
 core = 7.x
