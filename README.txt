@@ -9,6 +9,7 @@ This module is sponsored by Morgan (http://morgan.net.au) and Fat Zebra
 INSTALLATION
 ------------
 
+- Ensure cURL (http://php.net/manual/en/book.curl.php) is installed
 - Download the FatZebra PHP Library into sites/all/libraries/fatzebra_php or
   sites/<domain>/libraries/fatzebra_php
     (https://github.com/fatzebra/PHP-Library/zipball/master)
