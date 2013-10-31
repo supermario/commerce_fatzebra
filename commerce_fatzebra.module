@@ -109,8 +109,21 @@ function commerce_fatzebra_settings_form($settings = NULL) {
  * Payment method callback: checkout form.
  */
 function commerce_fatzebra_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+  // Use the default commerce payment credit card form as a base
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-  return commerce_payment_credit_card_form(array('code' => ''));
+  $form = commerce_payment_credit_card_form(array('code' => ''));
+  // Add a field for Cardholder's name
+  $name = array(
+    'name' => array(
+      '#title' => "Cardholder's Name",
+      '#type' => 'textfield',
+      '#required' => TRUE,
+    )
+  );
+  // array_merge to set Cardholder element first
+  // Using #weight makes ordering messy for modules extending with hook_form_alter
+  $form['credit_card'] = array_merge($name, $form['credit_card']);
+  return $form;
 }
 
 /**
@@ -138,7 +151,7 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
   $purchase_request_values = array(
     'amount' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'reference' => $order->order_id . "-" . time(),
-    'card_holder' => commerce_fatzebra_get_order_billing_name($order),
+    'card_holder' => $pane_values['credit_card']['name'],
     'card_number' => preg_replace('/[^\d]/', '', $pane_values['credit_card']['number']),
     'card_expiry' => $pane_values['credit_card']['exp_month'] . "/" . $pane_values['credit_card']['exp_year'],
     'cvv' => $pane_values['credit_card']['code'],

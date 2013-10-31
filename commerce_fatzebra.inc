@@ -118,19 +118,3 @@ function commerce_fatzebra_purchase_response_process($response) {
 
   return $process_result;
 }
-
-/**
- * Given an order, returns a billing name from the order's customer profile.
- */
-function commerce_fatzebra_get_order_billing_name($order) {
-  $customer_profile = commerce_customer_profile_load($order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id']);
-  $billing_address = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0];
-
-  if (!empty($billing_address['name_line'])) {
-    $billing_name = $billing_address['name_line'];
-  }
-  else {
-    $billing_name = $billing_address['first_name'] . ' ' . $billing_address['last_name'];
-  }
-  return $billing_name;
-}
