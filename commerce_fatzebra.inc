@@ -20,8 +20,7 @@
  *   An object representing the JSON response received from the Fat Zebra API
  */
 function commerce_fatzebra_purchase($request_values, $settings) {
-
-  libraries_load('fatzebra_php');
+  $gw = commerce_fatzebra_gateway($request_values, $settings);
 
   $purchase_request = new FatZebra\PurchaseRequest(
     $request_values['amount'],
@@ -31,6 +30,23 @@ function commerce_fatzebra_purchase($request_values, $settings) {
     $request_values['card_expiry'],
     $request_values['cvv']
   );
+
+  return $gw->purchase($purchase_request);
+}
+
+
+function commerce_fatzebra_refund($request_values, $settings) {
+  $gw = commerce_fatzebra_gateway($request_values, $settings);
+
+  return $gw->refund(
+    $request_values["transaction_id"],
+    $request_values["amount"],
+    $request_values["reference"]
+  );
+}
+
+function commerce_fatzebra_gateway($request_values, $settings) {
+  libraries_load('fatzebra_php');
 
   // For any non-live setting, use true (test mode).
   $transaction_mode = ($settings['txn_mode'] == COMMERCE_FATZEBRA_TXN_MODE_LIVE) ? FALSE : TRUE;
@@ -42,7 +58,8 @@ function commerce_fatzebra_purchase($request_values, $settings) {
     $settings['gateway']
   );
   $gw->timeout = 30;
-  return $gw->purchase($purchase_request);
+
+  return $gw;
 }
 
 /**
@@ -57,12 +74,12 @@ function commerce_fatzebra_purchase($request_values, $settings) {
  *   true if the purchase is successful, a string containing an error message
  *   if unsuccessful
  */
-function commerce_fatzebra_purchase_response_process($response) {
+function commerce_fatzebra_response_process($response, $order_id) {
 
   $process_result = TRUE;
 
   // Create a new transaction object for the current order.
-  $transaction = commerce_payment_transaction_new('commerce_fatzebra', $response->order_id);
+  $transaction = commerce_payment_transaction_new('commerce_fatzebra', $order_id);
 
   // Set the message that will be recorded for this transaction.
   $transaction->message = 'Transaction @status: @statusdetail.';
