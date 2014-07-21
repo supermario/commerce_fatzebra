@@ -34,7 +34,17 @@ function commerce_fatzebra_purchase($request_values, $settings) {
   return $gw->purchase($purchase_request);
 }
 
-
+/**
+ * Makes a refund request and returns a request response object
+ * @param  array $request_values
+ *   An associative array containing:
+ *     - transaction_id: The Transaction ID of the original transaction to
+ *       be refunded (XXX-P-YYYYYY)
+ *     - amount: A float value of the purchase amount i.e. 142.33
+ *     - reference: A string containing a unique reference for this transaction
+ * @param  array $settings       [description]
+ * @return object                F
+ */
 function commerce_fatzebra_refund($request_values, $settings) {
   $gw = commerce_fatzebra_gateway($request_values, $settings);
 
