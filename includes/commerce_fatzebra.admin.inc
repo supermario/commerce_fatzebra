@@ -7,6 +7,11 @@
 
 /**
  * Form callback: allows the user to void a transaction.
+ * @param  $form
+ * @param  $form_state
+ * @param  $order
+ * @param  $transaction
+ * @return $form        The Drupal FormAPI form definition
  */
 function commerce_fatzebra_refund_form($form, &$form_state, $order, $transaction) {
   $form_state['transaction'] = $transaction;
@@ -33,7 +38,11 @@ function commerce_fatzebra_refund_form($form, &$form_state, $order, $transaction
 }
 
 /**
- * Submit handler: process the void request
+ * Form submit handler for transaction refund.
+ *
+ * @param  $form
+ * @param  $form_state
+ * @return boolean      Whether refund was error-free
  */
 function commerce_fatzebra_refund_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
