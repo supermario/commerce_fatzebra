@@ -121,14 +121,9 @@ function commerce_fatzebra_response_process($response, $order_id) {
     $transaction->message_variables['@statusdetail'] = $response->response->message;
 
     $transaction->amount = $response->response->amount;
-    $transaction->currency_code = $response->response->currency;
     $transaction->remote_id = $response->response->id;
-
-    // Set the transaction message and tokens that will be recorded as a
-    // transaction against this order.
-    $transaction->message .= ' Card: @cardnumber, Reference: @reference';
+    $transaction->message .= ' Card: @cardnumber';
     $transaction->message_variables['@cardnumber'] = $response->response->card_number;
-    $transaction->message_variables['@reference'] = $response->response->reference;
 
     // If the transaction was not successful, set an error message to be
     // displayed to the user.
