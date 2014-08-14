@@ -15,21 +15,40 @@
  */
 function commerce_fatzebra_refund_form($form, &$form_state, $order, $transaction) {
   $form_state['transaction'] = $transaction;
+  $original_amount = commerce_currency_amount_to_decimal($transaction->amount, $transaction->currency_code);
 
   // Load and store the payment method instance for this transaction
   $payment_method = commerce_payment_method_instance_load($transaction->instance_id);
   $form_state['payment_method'] = $payment_method;
 
-  $form['markup'] = array(
+  $form['markup_pre'] = array(
+    '#markup' => t('You are refunding from Order ID %order, transaction ID %trans, original transaction amount $%amount.',
+      array(
+        '%order' => $transaction->order_id,
+        '%trans' => $transaction->transaction_id,
+        '%amount' => $original_amount
+      )
+    ),
+  );
+
+  $form['refund_amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Refund amount'),
+    '#field_prefix' => '$',
+    '#description' => t('The transaction amount in dollars. I.e. $12.34'),
+    '#default_value' => $original_amount,
+    '#required' => true,
+  );
+  $form['markup_post'] = array(
     '#markup' => t('Are you sure that you want to refund this transaction?'),
   );
 
   $form = confirm_form(
     $form,
-    t('Are you sure that you want to refund this transaction?'),
-    'admin/commerce/orders/' . $order->order_id . '/payment',
+    t('Transaction refund'),
+    'admin/commerce/orders/' . $transaction->order_id . '/payment',
     '',
-    t('Refund'),
+    t('Confirm'),
     t('Cancel'),
     'confirm'
   );
@@ -53,8 +72,9 @@ function commerce_fatzebra_refund_form_submit($form, &$form_state) {
 
   $request_values = array(
     "transaction_id" => $transaction->remote_id,
-    "amount" => commerce_currency_amount_to_decimal($transaction->amount, $transaction->currency_code),
-    "reference" => $transaction->order_id
+    "amount" => $form_state['values']['refund_amount'],
+    // Suffix normal order_id reference with -R for refund, and a timestamp for uniqueness
+    "reference" => $transaction->order_id . "-R" . time()
   );
 
   // Submit the request to FatZebra.
@@ -64,9 +84,14 @@ function commerce_fatzebra_refund_form_submit($form, &$form_state) {
   // Create a new transaction for the refund
   $process_result = commerce_fatzebra_response_process($response, $transaction->order_id);
 
+  // Send user back to the payment form for this order
+  $form_state['redirect'] = 'admin/commerce/orders/' . $transaction->order_id . '/payment';
+
   // Pass on errors to user if there are any
   if ($process_result !== TRUE) {
     drupal_set_message(check_plain($process_result), 'error');
     return FALSE;
+  } else {
+    drupal_set_message(t('Refund sucessfully processed.'), 'status');
   }
 }
