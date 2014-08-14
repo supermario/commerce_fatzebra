@@ -110,8 +110,9 @@ function commerce_fatzebra_response_process($response, $order_id) {
   if ($response->successful === FALSE) {
 
     // We have an API error, set an error message to be displayed to the user.
-    $transaction->message_variables['@statusdetail'] = implode(', ', $response->errors);
-    $process_result = t("There was a problem communicating with the payment gateway. Please try again or contact @site_mail for help.", array('@site_mail' => variable_get('site_mail', '')));
+    $messages = implode(', ', $response->errors);
+    $transaction->message_variables['@statusdetail'] = $messages;
+    $process_result = t("There was a problem communicating with the payment gateway: @messages. Please try again or contact @site_mail for help.", array('@messages' => $messages, '@site_mail' => variable_get('site_mail', '')));
     watchdog('commerce_fatzebra', 'API Error: @response', array('@response' => print_r($response, TRUE)), WATCHDOG_ERROR);
 
   }
