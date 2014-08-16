@@ -2,8 +2,7 @@
 This module adds the Australian payment gateway Fat Zebra as a payment method
 for Drupal Commerce.
 
-This module is sponsored by Morgan (http://morgan.net.au) and Fat Zebra
-(https://fatzebra.com.au).
+This module is sponsored by Fat Zebra (https://fatzebra.com.au).
 
 
 INSTALLATION
@@ -33,6 +32,12 @@ See http://docs.fatzebra.com.au/ for test credit card numbers.
 
 If you'd like to get a Fat Zebra account you can sign up
 (https://www.fatzebra.com.au/register/solo) for free to get started.
+
+PLANNED FEATURES
+--------
+* Support for refunds (available in 7.x-1.x)
+* Support for Fat Zebra card tokenization using Commerce Card on File to allow users to make additional purchases without having to re-enter card data
+* Support for recurring payments
 
 MORE INFO
 ---------
