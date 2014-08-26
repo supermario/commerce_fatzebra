@@ -22,13 +22,16 @@
 function commerce_fatzebra_purchase($request_values, $settings) {
   $gw = commerce_fatzebra_gateway($request_values, $settings);
 
+  $fraud_data = isset($request_values['fraud']) ? $request_values['fraud'] : null ;
+
   $purchase_request = new FatZebra\PurchaseRequest(
     $request_values['amount'],
     $request_values['reference'],
     $request_values['card_holder'],
     $request_values['card_number'],
     $request_values['card_expiry'],
-    $request_values['cvv']
+    $request_values['cvv'],
+    $fraud_data
   );
 
   return $gw->purchase($purchase_request);
@@ -140,4 +143,77 @@ function commerce_fatzebra_response_process($response, $order_id) {
   commerce_payment_transaction_save($transaction);
 
   return $process_result;
+}
+
+/**
+ * Exctract order information for Retail Decisions fraud detection to be added
+ * to the FZ transaction payload
+ *
+ * @param  object $order
+ *   Commerce order object
+ * @return array
+ *   Order data organised into fraud payload according to FZ docs
+ *
+ * @see https://confluence.fatzebra.com.au/display/DOC/Purchases+with+Retail+Decisions
+ */
+function commerce_fatzebra_order_red_data($order) {
+
+  global $base_url;
+  libraries_load('fatzebra_php');
+
+  $fraud = array(
+    'website' => $base_url
+  );
+
+  $order = entity_metadata_wrapper('commerce_order', $order);
+
+  if (isset($order->commerce_customer_billing)) {
+    $billing =  $order->commerce_customer_billing;
+    $billing_addr =  $billing->commerce_customer_address;
+
+    $fraud['customer'] = array(
+      'address_1' => $billing_addr->thoroughfare->value(),
+      'city' => $billing_addr->locality->value(),
+      'country' => FatZebra\Helpers::iso3166_alpha3($billing_addr->country->value()),
+      'email' => $order->mail->value(),
+      'first_name' => $billing_addr->first_name->value(),
+      'last_name' => $billing_addr->last_name->value(),
+      'post_code' => $billing_addr->postal_code->value()
+    );
+  }
+
+  // User accounts aren't available for first time (anonymous) orders
+  $owner_value = $order->owner->value();
+  if (!empty($owner_value)) {
+    $fraud['customer']['created_at'] = date('c', $order->owner->created->value());
+    $fraud['customer']['existing_customer'] = true;
+  }
+
+  if (isset($order->commerce_customer_shipping)) {
+    $shipping = $order->commerce_customer_shipping;
+    $shipping_addr = $shipping->commerce_customer_address;
+    $fraud['shipping'] = array(
+      'address_1' => $shipping_addr->thoroughfare->value(),
+      'city' => $shipping_addr->locality->value(),
+      'country' => FatZebra\Helpers::iso3166_alpha3($shipping_addr->country->value()),
+      'first_name' => $shipping_addr->first_name->value(),
+      'last_name' => $shipping_addr->last_name->value(),
+      'post_code' => $shipping_addr->postal_code->value(),
+    );
+  }
+
+  foreach ($order->commerce_line_items as $line_item) {
+    if($line_item->type->value() == 'product'){
+      $fraud['items'][] = array(
+        'cost' => $line_item->commerce_unit_price->amount_decimal->value(),
+        'description' => $line_item->commerce_product->title->value(),
+        'line_total' => $line_item->commerce_total->amount_decimal->value(),
+        'product_code' => $line_item->commerce_product->sku->value(),
+        'qty' => $line_item->quantity->value(),
+        'sku' => $line_item->commerce_product->sku->value()
+      );
+    }
+  }
+
+  return $fraud;
 }

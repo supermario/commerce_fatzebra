@@ -138,6 +138,13 @@ function commerce_fatzebra_settings_form($settings = NULL) {
     '#default_value' => $settings['txn_mode'],
   );
 
+  $form['retail_decisions'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Retail Decisions Fraud Detection'),
+    '#description' => t("Send extended purchase data with purchase transactions to FatZebra."),
+    '#default_value' => $settings['retail_decisions'],
+  );
+
   return $form;
 }
 
@@ -196,6 +203,11 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
   // Merge settings form default values in case user has never saved settings.
   $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
 
+  // Add information to payload for fraud detection if Retail Decisions has been enabled
+  if ($payment_method['settings']['retail_decisions']) {
+    $purchase_request_values['fraud'] = commerce_fatzebra_order_red_data($order);
+  }
+
   $purchase_response = commerce_fatzebra_purchase($purchase_request_values, $payment_method['settings']);
 
   $process_result = commerce_fatzebra_response_process($purchase_response, $order->order_id);
@@ -215,5 +227,6 @@ function commerce_fatzebra_settings_form_default_values() {
     'token' => 'TEST',
     'gateway' => COMMERCE_FATZEBRA_GATEWAY_URL_SBOX,
     'txn_mode' => COMMERCE_FATZEBRA_TXN_MODE_TEST,
+    'retail_decisions' => 0
   );
 }
