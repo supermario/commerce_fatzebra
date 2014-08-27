@@ -199,6 +199,7 @@ function commerce_fatzebra_order_red_data($order) {
       'first_name' => $shipping_addr->first_name->value(),
       'last_name' => $shipping_addr->last_name->value(),
       'post_code' => $shipping_addr->postal_code->value(),
+      'shipping_method' => 'low_cost'
     );
   }
 
