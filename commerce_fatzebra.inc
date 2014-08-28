@@ -151,18 +151,21 @@ function commerce_fatzebra_response_process($response, $order_id) {
  *
  * @param  object $order
  *   Commerce order object
+ * @param  array $form
+ *   Form values submitted with the purchase
  * @return array
  *   Order data organised into fraud payload according to FZ docs
  *
  * @see https://confluence.fatzebra.com.au/display/DOC/Purchases+with+Retail+Decisions
  */
-function commerce_fatzebra_order_red_data($order) {
+function commerce_fatzebra_order_red_data($order, $form) {
 
   global $base_url;
   libraries_load('fatzebra_php');
 
   $fraud = array(
-    'website' => $base_url
+    'website' => $base_url,
+    'device_id' => $form['device_id']
   );
 
   $order = entity_metadata_wrapper('commerce_order', $order);

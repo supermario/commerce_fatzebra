@@ -166,6 +166,29 @@ function commerce_fatzebra_submit_form($payment_method, $pane_values, $checkout_
   // array_merge to set Cardholder element first
   // Using #weight makes ordering messy for modules extending with hook_form_alter
   $form['credit_card'] = array_merge($name, $form['credit_card']);
+
+  // If Retail Decisions is enabled, add required device detection JS
+  // as well as the hidden form element for processing
+  if ($payment_method['settings']['retail_decisions']) {
+
+    drupal_add_js("
+      var io_bbout_element_id = 'payment_details_device_id';
+      var io_enable_rip = true;
+      var io_install_flash = false;
+      var io_install_stm = false;
+      var io_exclude_stm = 12;
+    ", 'inline');
+
+    $path = "https://ci-mpsnare.iovation.com/snare.js"; // Dev
+    // $path = "https://mpsnare.iesnare.com/snare.js" // Prod
+    drupal_add_js($path, 'external');
+
+    $form['credit_card']['device_id'] = array(
+      '#type' => 'hidden',
+      '#attributes' => array('id' => 'payment_details_device_id')
+    );
+  }
+
   return $form;
 }
 
@@ -205,7 +228,7 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
 
   // Add information to payload for fraud detection if Retail Decisions has been enabled
   if ($payment_method['settings']['retail_decisions']) {
-    $purchase_request_values['fraud'] = commerce_fatzebra_order_red_data($order);
+    $purchase_request_values['fraud'] = commerce_fatzebra_order_red_data($order, $pane_values);
   }
 
   $purchase_response = commerce_fatzebra_purchase($purchase_request_values, $payment_method['settings']);
