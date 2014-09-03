@@ -167,6 +167,16 @@ function commerce_fatzebra_submit_form($payment_method, $pane_values, $checkout_
   // Using #weight makes ordering messy for modules extending with hook_form_alter
   $form['credit_card'] = array_merge($name, $form['credit_card']);
 
+  drupal_add_js(drupal_get_path('module', 'commerce_fatzebra') . '/commerce_fatzebra.directpost.js');
+  $form['credit_card']['token'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('id' => 'payment_details_token')
+  );
+  $form['credit_card']['token_status'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('id' => 'payment_details_token_status')
+  );
+
   // If Retail Decisions is enabled, add required device detection JS
   // as well as the hidden form element for processing
   if ($payment_method['settings']['retail_decisions']) {
@@ -205,12 +215,28 @@ function commerce_fatzebra_submit_form_validate($payment_method, $pane_form, $pa
   if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
     return FALSE;
   }
+
+  // Now that basic validations have passed, we can validate the token_status
+
+  // @TODO these conditions should only run when in direct post mode
+  $token = $pane_values['credit_card']['token'];
+  $token_status = $pane_values['credit_card']['token_status'];
+
+  if ($token_status != 1) {
+    // @TODO can we provide more useful error messages here?
+    form_set_error('number', t("There was a problem communicating with the payment gateway, status code: $token_status. Please try again or contact @site_mail for help.",
+      array('@site_mail' => variable_get('site_mail', '')))
+    );
+  }
 }
 
 /**
  * Payment method callback: checkout form submission.
  */
 function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane_values, &$order, $charge) {
+
+  // @TODO need to implement handling for tokenised transactions
+  return;
 
   module_load_include('inc', 'commerce_fatzebra', 'commerce_fatzebra');
 
@@ -253,3 +279,31 @@ function commerce_fatzebra_settings_form_default_values() {
     'retail_decisions' => 0
   );
 }
+
+
+function commerce_fatzebra_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['commerce_payment'])) {
+
+    $token_status = @$form_state['values']['commerce_payment']['payment_details']['credit_card']['token_status'];
+
+    dpm($form);
+    // If a tokenization request has been made, credit card fields are not required and
+    // commerce_fatzebra_submit_form_validate takes responsiblity for validation
+    // if (!empty($token_status)) {
+      $credit_card = &$form['commerce_payment']['payment_details']['credit_card'];
+      $credit_card['name']['#required'] = false;
+      $credit_card['number']['#required'] = false;
+      $credit_card['exp_month']['#required'] = false;
+      $credit_card['code']['#required'] = false;
+    // }
+
+    // @TODO this must only be added when we're using the Direct Post mode.
+    // Tokenize credit card details before submitting.
+    $form['#attributes'] = array('OnSubmit' => 'return Drupal.behaviors.commerce_fatzebra.tokenize(this)');
+  }
+
+
+}
+
+
+
