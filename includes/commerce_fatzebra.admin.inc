@@ -66,9 +66,9 @@ function commerce_fatzebra_refund_form($form, &$form_state, $order, $transaction
 function commerce_fatzebra_refund_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
 
-  // Payment method not loading for some reason...?
   $payment_method = (array)$form_state['payment_method'];
-  $payment_method['settings'] = commerce_fatzebra_settings_form_default_values();
+  // Merge settings form default values in case user has never saved settings.
+  $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
 
   $request_values = array(
     "transaction_id" => $transaction->remote_id,
@@ -82,7 +82,7 @@ function commerce_fatzebra_refund_form_submit($form, &$form_state) {
   $response = commerce_fatzebra_refund($request_values, $payment_method['settings']);
 
   // Create a new transaction for the refund
-  $process_result = commerce_fatzebra_response_process($response, $transaction->order_id);
+  $process_result = commerce_fatzebra_response_process($response, $transaction->order_id, $payment_method);
 
   // Send user back to the payment form for this order
   $form_state['redirect'] = 'admin/commerce/orders/' . $transaction->order_id . '/payment';
