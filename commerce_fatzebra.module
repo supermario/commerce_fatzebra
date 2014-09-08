@@ -259,7 +259,7 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
 
   $purchase_response = commerce_fatzebra_purchase($purchase_request_values, $payment_method['settings']);
 
-  $process_result = commerce_fatzebra_response_process($purchase_response, $order->order_id);
+  $process_result = commerce_fatzebra_response_process($purchase_response, $order->order_id, $payment_method);
 
   if ($process_result !== TRUE) {
     drupal_set_message(check_plain($process_result), 'error');

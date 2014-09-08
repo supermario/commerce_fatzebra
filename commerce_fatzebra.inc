@@ -87,7 +87,7 @@ function commerce_fatzebra_gateway($request_values, $settings) {
  *   true if the purchase is successful, a string containing an error message
  *   if unsuccessful
  */
-function commerce_fatzebra_response_process($response, $order_id) {
+function commerce_fatzebra_response_process($response, $order_id, $payment_method) {
 
   $process_result = TRUE;
 
@@ -97,6 +97,9 @@ function commerce_fatzebra_response_process($response, $order_id) {
   // Set the message that will be recorded for this transaction.
   $transaction->message = 'Transaction @status: @statusdetail.';
   $transaction->message_variables = array();
+
+  // The instance ID identifies which payment method instance was used for this transaction
+  $transaction->instance_id = $payment_method['instance_id'];
 
   // Set the transaction status and text based on response success values.
   if ($response->successful && $response->response->successful) {
