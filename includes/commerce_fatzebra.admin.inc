@@ -19,6 +19,7 @@ function commerce_fatzebra_refund_form($form, &$form_state, $order, $transaction
 
   // Load and store the payment method instance for this transaction
   $payment_method = commerce_payment_method_instance_load($transaction->instance_id);
+  $form_state['order'] = $order;
   $form_state['payment_method'] = $payment_method;
 
   $form['markup_pre'] = array(
