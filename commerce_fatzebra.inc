@@ -20,7 +20,7 @@
  *   An object representing the JSON response received from the Fat Zebra API
  */
 function commerce_fatzebra_purchase($request_values, $settings) {
-  $gw = commerce_fatzebra_gateway($request_values, $settings);
+  $gw = commerce_fatzebra_gateway($settings);
 
   $fraud_data = isset($request_values['fraud']) ? $request_values['fraud'] : null ;
 
@@ -38,6 +38,22 @@ function commerce_fatzebra_purchase($request_values, $settings) {
 }
 
 /**
+ *
+ * @param  string $token     The FatZebra credit card token
+ * @param  int    $amount    A float value of the purchase amount i.e. 142.33
+ * @param  string $reference A string containing a unique reference for this transaction
+ * @param  string $cvv       The Card CVV code (optional but recommended)
+ *
+ * @return object
+ *   An object representing the JSON response received from the Fat Zebra API
+ */
+function commerce_fatzebra_token_purchase($token, $amount, $reference, $settings, $cvv = null) {
+  $gw = commerce_fatzebra_gateway($settings);
+
+  return $gw->token_purchase($token, $amount, $reference);
+}
+
+/**
  * Makes a refund request and returns a request response object
  * @param  array $request_values
  *   An associative array containing:
@@ -49,7 +65,7 @@ function commerce_fatzebra_purchase($request_values, $settings) {
  * @return object                F
  */
 function commerce_fatzebra_refund($request_values, $settings) {
-  $gw = commerce_fatzebra_gateway($request_values, $settings);
+  $gw = commerce_fatzebra_gateway($settings);
 
   return $gw->refund(
     $request_values["transaction_id"],
@@ -58,7 +74,7 @@ function commerce_fatzebra_refund($request_values, $settings) {
   );
 }
 
-function commerce_fatzebra_gateway($request_values, $settings) {
+function commerce_fatzebra_gateway($settings) {
   libraries_load('fatzebra_php');
 
   // For any non-live setting, use true (test mode).

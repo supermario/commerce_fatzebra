@@ -36,14 +36,17 @@
     },
     jsonp: function(data) {
 
-      $('#payment_details_token_status').val(data.r);
+      // Disable all inputs within the payment details area, we don't want
+      // them sent to the server at all so we say PCI compliant
+      $('#payment-details').find('input[type=text],select').attr('disabled',true);
 
-      this._processed = true;
+      $('#payment_details_token_status').val(data.r);
 
       if (data.r == 1) {
         $('#payment_details_token').val(data.token);
       }
 
+      this._processed = true;
       $(this._submit).submit();
     }
 

@@ -10,6 +10,8 @@ define('COMMERCE_FATZEBRA_TXN_MODE_LIVE', 'live');
 define('COMMERCE_FATZEBRA_TXN_MODE_TEST', 'test');
 define('COMMERCE_FATZEBRA_GATEWAY_URL_LIVE', 'https://gateway.fatzebra.com.au');
 define('COMMERCE_FATZEBRA_GATEWAY_URL_SBOX', 'https://gateway.sandbox.fatzebra.com.au');
+define('COMMERCE_FATZEBRA_DIRECT_POST_ENABLED', 'enabled');
+define('COMMERCE_FATZEBRA_DIRECT_POST_DISABLED', 'disabled');
 
 /**
  * Implements hook_menu().
@@ -138,6 +140,12 @@ function commerce_fatzebra_settings_form($settings = NULL) {
     '#default_value' => $settings['txn_mode'],
   );
 
+  $form['direct_post'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('PCI Compliance Mode (Direct Post)'),
+    '#description' => t("Enabling PCI Compliance Mode will cause credit card data to be tokenized via Direct Post to Fatzebra before the page is submitted. The token will then be submitted with the form. No credit card data will be passed to the server."),
+    '#default_value' => $settings['direct_post'],
+  );
   $form['retail_decisions'] = array(
     '#type' => 'checkbox',
     '#title' => t('Retail Decisions Fraud Detection'),
@@ -167,15 +175,17 @@ function commerce_fatzebra_submit_form($payment_method, $pane_values, $checkout_
   // Using #weight makes ordering messy for modules extending with hook_form_alter
   $form['credit_card'] = array_merge($name, $form['credit_card']);
 
-  drupal_add_js(drupal_get_path('module', 'commerce_fatzebra') . '/commerce_fatzebra.directpost.js');
-  $form['credit_card']['token'] = array(
-    '#type' => 'hidden',
-    '#attributes' => array('id' => 'payment_details_token')
-  );
-  $form['credit_card']['token_status'] = array(
-    '#type' => 'hidden',
-    '#attributes' => array('id' => 'payment_details_token_status')
-  );
+  // PCI Compliance Mode (Direct Post)
+  if ($payment_method['settings']['direct_post']) {
+    $form['credit_card']['token'] = array(
+      '#type' => 'hidden',
+      '#attributes' => array('id' => 'payment_details_token')
+      );
+    $form['credit_card']['token_status'] = array(
+      '#type' => 'hidden',
+      '#attributes' => array('id' => 'payment_details_token_status')
+    );
+  }
 
   // If Retail Decisions is enabled, add required device detection JS
   // as well as the hidden form element for processing
@@ -208,25 +218,28 @@ function commerce_fatzebra_submit_form($payment_method, $pane_values, $checkout_
 function commerce_fatzebra_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
-  $settings = array(
-    'form_parents' => array_merge($form_parents, array('credit_card')),
-  );
-
-  if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
-    return FALSE;
-  }
 
   // Now that basic validations have passed, we can validate the token_status
+  if ($payment_method['settings']['direct_post']) {
+    $token = $pane_values['credit_card']['token'];
+    $token_status = $pane_values['credit_card']['token_status'];
 
-  // @TODO these conditions should only run when in direct post mode
-  $token = $pane_values['credit_card']['token'];
-  $token_status = $pane_values['credit_card']['token_status'];
+    if ($token_status != 1) {
+      // @TODO can we provide more useful error messages here?
+      form_set_error('number', t("There was a problem communicating with the payment gateway, status code: $token_status. Please try again or contact @site_mail for help.",
+        array('@site_mail' => variable_get('site_mail', '')))
+      );
+    }
+  } else {
 
-  if ($token_status != 1) {
-    // @TODO can we provide more useful error messages here?
-    form_set_error('number', t("There was a problem communicating with the payment gateway, status code: $token_status. Please try again or contact @site_mail for help.",
-      array('@site_mail' => variable_get('site_mail', '')))
-    );
+    // Normal method, validate our form as usual
+    $settings = array(
+      'form_parents' => array_merge($form_parents, array('credit_card')),
+      );
+
+    if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
+      return FALSE;
+    }
   }
 }
 
@@ -235,31 +248,45 @@ function commerce_fatzebra_submit_form_validate($payment_method, $pane_form, $pa
  */
 function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane_values, &$order, $charge) {
 
-  // @TODO need to implement handling for tokenised transactions
-  return;
-
   module_load_include('inc', 'commerce_fatzebra', 'commerce_fatzebra');
 
-  $purchase_request_values = array(
-    'amount' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
-    'reference' => $order->order_id . "-" . time(),
-    'card_holder' => $pane_values['credit_card']['name'],
-    'card_number' => preg_replace('/[^\d]/', '', $pane_values['credit_card']['number']),
-    'card_expiry' => $pane_values['credit_card']['exp_month'] . "/" . $pane_values['credit_card']['exp_year'],
-    'cvv' => $pane_values['credit_card']['code'],
-  );
+  $amount = commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']);
+  $reference = $order->order_id . "-" . time();
 
-  // Merge settings form default values in case user has never saved settings.
-  $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
+  // PCI Compliance Mode (Direct Post)
+  if ($payment_method['settings']['direct_post']) {
 
-  // Add information to payload for fraud detection if Retail Decisions has been enabled
-  if ($payment_method['settings']['retail_decisions']) {
-    $purchase_request_values['fraud'] = commerce_fatzebra_order_red_data($order, $pane_values);
+    $token = $pane_values['credit_card']['token'];
+
+    $purchase_response = commerce_fatzebra_token_purchase($token, $amount, $reference, $payment_method['settings']);
+    dpm($purchase_response);
+
+  } else {
+
+    // Our regular credit card submission process
+
+    $purchase_request_values = array(
+      'amount' => $amount,
+      'reference' => $reference,
+      'card_holder' => $pane_values['credit_card']['name'],
+      'card_number' => preg_replace('/[^\d]/', '', $pane_values['credit_card']['number']),
+      'card_expiry' => $pane_values['credit_card']['exp_month'] . "/" . $pane_values['credit_card']['exp_year'],
+      'cvv' => $pane_values['credit_card']['code'],
+    );
+
+    // Merge settings form default values in case user has never saved settings.
+    $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
+
+    // Add information to payload for fraud detection if Retail Decisions has been enabled
+    if ($payment_method['settings']['retail_decisions']) {
+      $purchase_request_values['fraud'] = commerce_fatzebra_order_red_data($order, $pane_values);
+    }
+
+    $purchase_response = commerce_fatzebra_purchase($purchase_request_values, $payment_method['settings']);
+
+    $process_result = commerce_fatzebra_response_process($purchase_response, $order->order_id, $payment_method);
+
   }
-
-  $purchase_response = commerce_fatzebra_purchase($purchase_request_values, $payment_method['settings']);
-
-  $process_result = commerce_fatzebra_response_process($purchase_response, $order->order_id, $payment_method);
 
   if ($process_result !== TRUE) {
     drupal_set_message(check_plain($process_result), 'error');
@@ -281,29 +308,30 @@ function commerce_fatzebra_settings_form_default_values() {
 }
 
 
+/**
+ * Implementation of hook_form_alter
+ */
 function commerce_fatzebra_form_alter(&$form, &$form_state, $form_id) {
+
+  // We don't know where the user might have configured the payment pane,
+  // so we match by presence of the form elements rather than form_id.
   if (isset($form['commerce_payment'])) {
+    $payment_method = commerce_payment_method_instance_load($form['commerce_payment']['payment_method']['#default_value']);
 
-    $token_status = @$form_state['values']['commerce_payment']['payment_details']['credit_card']['token_status'];
+    // PCI Compliance Mode (Direct Post)
+    if ($payment_method['settings']['direct_post']) {
+      drupal_add_js(drupal_get_path('module', 'commerce_fatzebra') . '/commerce_fatzebra.directpost.js');
 
-    dpm($form);
-    // If a tokenization request has been made, credit card fields are not required and
-    // commerce_fatzebra_submit_form_validate takes responsiblity for validation
-    // if (!empty($token_status)) {
+      // Tokenize credit card details before submission
+      $form['#attributes']['OnSubmit'] = 'return Drupal.behaviors.commerce_fatzebra.tokenize(this)';
+
+      // Credit card fields are not required with Direct Post
       $credit_card = &$form['commerce_payment']['payment_details']['credit_card'];
       $credit_card['name']['#required'] = false;
       $credit_card['number']['#required'] = false;
       $credit_card['exp_month']['#required'] = false;
       $credit_card['code']['#required'] = false;
-    // }
 
-    // @TODO this must only be added when we're using the Direct Post mode.
-    // Tokenize credit card details before submitting.
-    $form['#attributes'] = array('OnSubmit' => 'return Drupal.behaviors.commerce_fatzebra.tokenize(this)');
+    }
   }
-
-
 }
-
-
-
