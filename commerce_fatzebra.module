@@ -229,7 +229,9 @@ function commerce_fatzebra_submit_form_validate($payment_method, $pane_form, $pa
       form_set_error('number', t("There was a problem communicating with the payment gateway, status code: $token_status. Please try again or contact @site_mail for help.",
         array('@site_mail' => variable_get('site_mail', '')))
       );
+      return false;
     }
+
   } else {
 
     // Normal method, validate our form as usual
@@ -253,18 +255,19 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
   $amount = commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']);
   $reference = $order->order_id . "-" . time();
 
+  // Merge settings form default values in case user has never saved settings.
+  $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
+
   // PCI Compliance Mode (Direct Post)
   if ($payment_method['settings']['direct_post']) {
 
     $token = $pane_values['credit_card']['token'];
 
     $purchase_response = commerce_fatzebra_token_purchase($token, $amount, $reference, $payment_method['settings']);
-    dpm($purchase_response);
 
   } else {
 
     // Our regular credit card submission process
-
     $purchase_request_values = array(
       'amount' => $amount,
       'reference' => $reference,
@@ -274,19 +277,15 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
       'cvv' => $pane_values['credit_card']['code'],
     );
 
-    // Merge settings form default values in case user has never saved settings.
-    $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
-
     // Add information to payload for fraud detection if Retail Decisions has been enabled
     if ($payment_method['settings']['retail_decisions']) {
       $purchase_request_values['fraud'] = commerce_fatzebra_order_red_data($order, $pane_values);
     }
 
     $purchase_response = commerce_fatzebra_purchase($purchase_request_values, $payment_method['settings']);
-
-    $process_result = commerce_fatzebra_response_process($purchase_response, $order->order_id, $payment_method);
-
   }
+
+  $process_result = commerce_fatzebra_response_process($purchase_response, $order->order_id, $payment_method);
 
   if ($process_result !== TRUE) {
     drupal_set_message(check_plain($process_result), 'error');
