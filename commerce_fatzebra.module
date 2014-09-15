@@ -146,6 +146,12 @@ function commerce_fatzebra_settings_form($settings = NULL) {
     '#description' => t("Enabling PCI Compliance Mode will cause credit card data to be tokenized via Direct Post to Fatzebra before the page is submitted. The token will then be submitted with the form. No credit card data will be passed to the server."),
     '#default_value' => $settings['direct_post'],
   );
+  $form['shared_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Fat Zebra Shared Key'),
+    '#description' => t('The shared key is use to create verification tokens when using Direct Post.'),
+    '#default_value' => $settings['shared_key'],
+  );
   $form['retail_decisions'] = array(
     '#type' => 'checkbox',
     '#title' => t('Retail Decisions Fraud Detection'),
@@ -302,7 +308,8 @@ function commerce_fatzebra_settings_form_default_values() {
     'token' => 'TEST',
     'gateway' => COMMERCE_FATZEBRA_GATEWAY_URL_SBOX,
     'txn_mode' => COMMERCE_FATZEBRA_TXN_MODE_TEST,
-    'retail_decisions' => 0
+    'retail_decisions' => 0,
+    'shared_key' => ''
   );
 }
 
@@ -320,6 +327,19 @@ function commerce_fatzebra_form_alter(&$form, &$form_state, $form_id) {
     // PCI Compliance Mode (Direct Post)
     if ($payment_method['settings']['direct_post']) {
       drupal_add_js(drupal_get_path('module', 'commerce_fatzebra') . '/commerce_fatzebra.directpost.js');
+
+      // We don't need the return path given we're using JSONP, so generate a changing ID instead
+      $return_path = uniqid('fatzebra-nonce-');
+      $username = $payment_method['settings']['username'];
+      $gateway = $payment_method['settings']['gateway'];
+      $shared_key = $payment_method['settings']['shared_key'];
+
+      $directpost_settings = array(
+        'return_path' => $return_path,
+        'verification' => hash_hmac('md5', $return_path, $shared_key),
+        'directpost_url' => "{$gateway}/v2/credit_cards/direct/{$username}.json",
+      );
+      drupal_add_js(array('commerce_fatzebra' => $directpost_settings), 'setting');
 
       // Tokenize credit card details before submission
       $form['#attributes']['OnSubmit'] = 'return Drupal.behaviors.commerce_fatzebra.tokenize(this)';

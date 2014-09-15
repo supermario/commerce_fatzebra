@@ -16,20 +16,20 @@
       // Remember the form so we can trigger the submit later
       this._submit = submit;
 
-      // @STUB Need to pull real data from form.
+      v = function(name) { return $('[name="commerce_payment[payment_details][credit_card]['+name+']"]').val(); }
       req = {
-        card_holder: 'Jim Citizen',
-        card_number: '4005 5500 0000 0001',
-        expiry_month: '9',
-        expiry_year: '2019',
-        cvv: '878',
-        return_path: 'https://gateway.sandbox.fatzebra.com.au',
-        verification: '0ccd3290f9ed250f327930b568453b29'
+        card_holder: v('name'),
+        card_number: v('number'),
+        expiry_month: v('exp_month'),
+        expiry_year: v('exp_year'),
+        cvv: v('code'),
+        return_path: Drupal.settings.commerce_fatzebra.return_path,
+        verification: Drupal.settings.commerce_fatzebra.verification
       };
 
       $.ajax({
         type: "GET",
-        url: "https://gateway.sandbox.fatzebra.com.au/v2/credit_cards/direct/TESTmario.json",
+        url: Drupal.settings.commerce_fatzebra.directpost_url,
         data: req,
         jsonpCallback: "Drupal.behaviors.commerce_fatzebra.jsonp",
         contentType: "text/javascript",
