@@ -27,6 +27,7 @@
         verification: Drupal.settings.commerce_fatzebra.verification
       };
 
+      var that = this;
       $.ajax({
         type: "GET",
         url: Drupal.settings.commerce_fatzebra.directpost_url,
@@ -35,10 +36,9 @@
         contentType: "text/javascript",
         dataType: "jsonp",
         error: function(e) {
-          // @TODO need to handle processing loop here too
-          // Handle errors here - all non HTTP 2xx errors, such as HTTP 500, 403, 401 etc
-          // (very unlikely, but HTTP 500 or HTTP 502 is the most likely to happen)
-          alert(e.message);
+          that._processing = false;
+          message = "Sorry we encountered an error validating your credit card - please try again.\n\nIf this error persists please contact the website owner.";
+          alert(message);
         }
       });
 
