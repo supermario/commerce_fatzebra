@@ -205,8 +205,7 @@ function commerce_fatzebra_submit_form($payment_method, $pane_values, $checkout_
       var io_exclude_stm = 12;
     ", 'inline');
 
-    $path = "https://ci-mpsnare.iovation.com/snare.js"; // Dev
-    // $path = "https://mpsnare.iesnare.com/snare.js" // Prod
+    $path = "https://mpsnare.iesnare.com/snare.js";
     drupal_add_js($path, 'external');
 
     $form['credit_card']['device_id'] = array(
