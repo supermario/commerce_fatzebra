@@ -33,10 +33,20 @@ See http://docs.fatzebra.com.au/ for test credit card numbers.
 If you'd like to get a Fat Zebra account you can sign up
 (https://www.fatzebra.com.au/register/solo) for free to get started.
 
+PCI DDS Compliance
+------------------
+
+Provides an optional PCI Compliance Mode, where credit card data is tokenised
+via direct post to FatZebra before payment is submitted. This avoids handling of
+any credit card data, even temporarily, by the server.
+
+Currently available in 7.x-1.x-dev.
+
 PLANNED FEATURES
 --------
-* Support for refunds (available in 7.x-1.x)
-* Support for Fat Zebra card tokenization using Commerce Card on File to allow users to make additional purchases without having to re-enter card data
+* Support for refunds (available in 7.x-1.x-dev)
+* Support for Fat Zebra card tokenization using Commerce Card on File to allow
+  users to make additional purchases without having to re-enter card data
 * Support for recurring payments
 
 MORE INFO
