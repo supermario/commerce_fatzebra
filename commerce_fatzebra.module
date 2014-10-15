@@ -10,8 +10,8 @@ define('COMMERCE_FATZEBRA_TXN_MODE_LIVE', 'live');
 define('COMMERCE_FATZEBRA_TXN_MODE_TEST', 'test');
 define('COMMERCE_FATZEBRA_GATEWAY_URL_LIVE', 'https://gateway.fatzebra.com.au');
 define('COMMERCE_FATZEBRA_GATEWAY_URL_SBOX', 'https://gateway.sandbox.fatzebra.com.au');
-define('COMMERCE_FATZEBRA_DIRECT_POST_ENABLED', 'enabled');
-define('COMMERCE_FATZEBRA_DIRECT_POST_DISABLED', 'disabled');
+define('COMMERCE_FATZEBRA_DIRECT_POST_ENABLED', 1);
+define('COMMERCE_FATZEBRA_DIRECT_POST_DISABLED', 0);
 
 /**
  * Implements hook_menu().
@@ -227,6 +227,8 @@ function commerce_fatzebra_submit_form($payment_method, $pane_values, $checkout_
 function commerce_fatzebra_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
+  // Merge settings form default values in case user has never saved settings.
+  $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
 
   // Now that basic validations have passed, we can validate the token_status
   if ($payment_method['settings']['direct_post']) {
