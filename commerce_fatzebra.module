@@ -308,7 +308,8 @@ function commerce_fatzebra_settings_form_default_values() {
     'gateway' => COMMERCE_FATZEBRA_GATEWAY_URL_SBOX,
     'txn_mode' => COMMERCE_FATZEBRA_TXN_MODE_TEST,
     'retail_decisions' => 0,
-    'shared_key' => ''
+    'shared_key' => '',
+    'direct_post' => COMMERCE_FATZEBRA_DIRECT_POST_DISABLED
   );
 }
 
