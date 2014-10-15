@@ -166,6 +166,10 @@ function commerce_fatzebra_settings_form($settings = NULL) {
  * Payment method callback: checkout form.
  */
 function commerce_fatzebra_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+
+  // Merge settings form default values in case user has never saved settings.
+  $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
+
   // Use the default commerce payment credit card form as a base
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
   $form = commerce_payment_credit_card_form(array('code' => ''));
@@ -323,6 +327,9 @@ function commerce_fatzebra_form_alter(&$form, &$form_state, $form_id) {
   // so we match by presence of the form elements rather than form_id.
   if (isset($form['commerce_payment'])) {
     $payment_method = commerce_payment_method_instance_load($form['commerce_payment']['payment_method']['#default_value']);
+
+    // Merge settings form default values in case user has never saved settings.
+    $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
 
     // PCI Compliance Mode (Direct Post)
     if ($payment_method['settings']['direct_post']) {
