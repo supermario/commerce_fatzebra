@@ -290,7 +290,7 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
 
     // Add information to payload for fraud detection if Retail Decisions has been enabled
     if ($payment_method['settings']['retail_decisions']) {
-      $purchase_request_values['fraud'] = commerce_fatzebra_order_red_data($order, $pane_values);
+      $purchase_request_values['fraud'] = commerce_fatzebra_order_red_data($order, $pane_values['credit_card']);
     }
 
     $purchase_response = commerce_fatzebra_purchase($purchase_request_values, $payment_method['settings']);
