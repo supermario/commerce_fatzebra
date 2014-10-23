@@ -330,6 +330,9 @@ function commerce_fatzebra_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['commerce_payment'])) {
     $payment_method = commerce_payment_method_instance_load($form['commerce_payment']['payment_method']['#default_value']);
 
+    // Only handle our own payment methods
+    if ($payment_method['method_id'] != 'commerce_fatzebra') { return; }
+
     // Merge settings form default values in case user has never saved settings.
     $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
 
