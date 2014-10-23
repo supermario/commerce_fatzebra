@@ -214,7 +214,7 @@ function commerce_fatzebra_order_red_data($order, $form) {
   if (isset($order->commerce_customer_shipping)) {
     $shipping = $order->commerce_customer_shipping;
     $shipping_addr = $shipping->commerce_customer_address;
-    $fraud['shipping'] = array(
+    $fraud['shipping_address'] = array(
       'address_1' => $shipping_addr->thoroughfare->value(),
       'city' => $shipping_addr->locality->value(),
       'country' => FatZebra\Helpers::iso3166_alpha3($shipping_addr->country->value()),
