@@ -142,7 +142,12 @@ function commerce_fatzebra_response_process($response, $order_id, $payment_metho
     // API call was successful, so $response->response will be populated.
     $transaction->message_variables['@statusdetail'] = $response->response->message;
 
-    $transaction->amount = $response->response->amount;
+    $amount = $response->response->amount;
+    if (strpos($response->response->id, '-R-') !== false) {
+      $amount = $amount * -1; // Flip the amount if -R- is in the ID
+    }
+
+    $transaction->amount = $amount;
     $transaction->remote_id = $response->response->id;
     $transaction->message .= ' Card: @cardnumber';
     $transaction->message_variables['@cardnumber'] = $response->response->card_number;
