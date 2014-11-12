@@ -16,6 +16,11 @@
 function commerce_fatzebra_refund_form($form, &$form_state, $order, $transaction) {
   $form_state['transaction'] = $transaction;
   $original_amount = commerce_currency_amount_to_decimal($transaction->amount, $transaction->currency_code);
+  $remaining_amount = 0;
+  foreach(commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id)) as $t) {
+    $remaining_amount += $t->amount;
+  }
+  $remaining_amount = commerce_currency_amount_to_decimal($remaining_amount, $transaction->currency_code);
 
   // Load and store the payment method instance for this transaction
   $payment_method = commerce_payment_method_instance_load($transaction->instance_id);
@@ -23,11 +28,12 @@ function commerce_fatzebra_refund_form($form, &$form_state, $order, $transaction
   $form_state['payment_method'] = $payment_method;
 
   $form['markup_pre'] = array(
-    '#markup' => t('You are refunding from Order ID %order, transaction ID %trans, original transaction amount $%amount.',
+    '#markup' => t('You are refunding from Order ID %order, transaction ID %trans, original transaction amount $%amount, refundable amount $%refundable.',
       array(
         '%order' => $transaction->order_id,
         '%trans' => $transaction->transaction_id,
-        '%amount' => $original_amount
+        '%amount' => $original_amount,
+        '%refundable' => $remaining_amount
       )
     ),
   );
@@ -37,7 +43,7 @@ function commerce_fatzebra_refund_form($form, &$form_state, $order, $transaction
     '#title' => t('Refund amount'),
     '#field_prefix' => '$',
     '#description' => t('The transaction amount in dollars. I.e. $12.34'),
-    '#default_value' => $original_amount,
+    '#default_value' => $remaining_amount,
     '#required' => true,
   );
   $form['markup_post'] = array(
@@ -83,7 +89,7 @@ function commerce_fatzebra_refund_form_submit($form, &$form_state) {
   $response = commerce_fatzebra_refund($request_values, $payment_method['settings']);
 
   // Create a new transaction for the refund
-  $process_result = commerce_fatzebra_response_process($response, $transaction->order_id);
+  $process_result = commerce_fatzebra_response_process($response, $transaction->order_id, $payment_method);
 
   // Send user back to the payment form for this order
   $form_state['redirect'] = 'admin/commerce/orders/' . $transaction->order_id . '/payment';
