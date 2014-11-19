@@ -130,12 +130,14 @@ function commerce_fatzebra_gateway($settings) {
  *   true if the purchase is successful, a string containing an error message
  *   if unsuccessful
  */
-function commerce_fatzebra_response_process($response, $order_id, $payment_method) {
+function commerce_fatzebra_response_process($response, $order_id, $payment_method, $transaction = null) {
 
   $process_result = TRUE;
 
-  // Create a new transaction object for the current order.
-  $transaction = commerce_payment_transaction_new('commerce_fatzebra', $order_id);
+  if (!isset($transaction)) {
+    // Create a new transaction object for the current order.
+    $transaction = commerce_payment_transaction_new('commerce_fatzebra', $order_id);
+  }
 
   // Set the message that will be recorded for this transaction.
   $transaction->message = 'Transaction @status: @statusdetail.';
