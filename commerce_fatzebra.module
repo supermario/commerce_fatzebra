@@ -67,7 +67,7 @@ function commerce_fatzebra_libraries_info() {
     'files' => array(
       'php' => array(
         'FatZebra.class.php',
-        'cacert.pem',
+        'ca-bundle.crt',
       ),
     ),
   );
