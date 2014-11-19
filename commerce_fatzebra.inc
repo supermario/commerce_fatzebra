@@ -114,7 +114,6 @@ function commerce_fatzebra_gateway($settings) {
     $transaction_mode,
     $settings['gateway']
   );
-  $gw->timeout = 30;
 
   return $gw;
 }
