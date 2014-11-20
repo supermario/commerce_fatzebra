@@ -265,7 +265,6 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
   $transaction = commerce_payment_transaction_new('commerce_fatzebra', $order->order_id);
   $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;  
   commerce_payment_transaction_save($transaction);
-  //error_log(print_r($transaction, true));
   $amount = commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']);
   $reference = $order->order_id . "-" . $transaction->transaction_id;
 
