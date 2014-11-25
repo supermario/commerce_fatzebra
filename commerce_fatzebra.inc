@@ -34,7 +34,17 @@ function commerce_fatzebra_purchase($request_values, $settings) {
     $fraud_data
   );
 
-  return $gw->purchase($purchase_request);
+  $response = null;
+
+  try {
+    $response = $gw->purchase($purchase_request);
+  } catch (FatZebra\TimeoutException $ex) {
+    error_log("Purchase Timeout: Retrying via fetch. Reference: " . $request_values['reference']);
+    $response = $gw->get_purchase($request_values['reference']);
+    if (!is_null($response)) error_log("Fetch Purchase successful (" . $request_values['reference'] . ")");
+  }
+
+  return $response;
 }
 
 /**
@@ -50,7 +60,17 @@ function commerce_fatzebra_purchase($request_values, $settings) {
 function commerce_fatzebra_token_purchase($token, $amount, $reference, $settings, $cvv = null) {
   $gw = commerce_fatzebra_gateway($settings);
 
-  return $gw->token_purchase($token, $amount, $reference);
+  $response = null;
+
+  try {
+    $response = $gw->token_purchase($token, $amount, $reference);
+  } catch (FatZebra\TimeoutException $ex) {
+    error_log("Token Purchase Timeout: Retrying via fetch. Reference: " . $reference);
+    $response = $gw->get_purchase($reference);
+    if (!is_null($response)) error_log("Fetch Token Purchase successful (" . $reference . ")");
+  }
+
+  return $response;
 }
 
 /**
@@ -67,11 +87,19 @@ function commerce_fatzebra_token_purchase($token, $amount, $reference, $settings
 function commerce_fatzebra_refund($request_values, $settings) {
   $gw = commerce_fatzebra_gateway($settings);
 
-  return $gw->refund(
-    $request_values["transaction_id"],
-    $request_values["amount"],
-    $request_values["reference"]
-  );
+  try {
+    $response = $gw->refund(
+                            $request_values["transaction_id"],
+                            $request_values["amount"],
+                            $request_values["reference"]
+                          );
+  } catch (FatZebra\TimeoutException $ex) {
+    error_log("Refund Timeout: Retrying via fetch. Reference: " . $request_values["reference"]);
+    $response = $gw->get_refund($reference);
+    if (!is_null($response)) error_log("Fetch Refund successful (" . $request_values["reference"] . ")");
+  }
+
+  return $response;
 }
 
 function commerce_fatzebra_gateway($settings) {
@@ -86,7 +114,6 @@ function commerce_fatzebra_gateway($settings) {
     $transaction_mode,
     $settings['gateway']
   );
-  $gw->timeout = 30;
 
   return $gw;
 }
@@ -103,12 +130,14 @@ function commerce_fatzebra_gateway($settings) {
  *   true if the purchase is successful, a string containing an error message
  *   if unsuccessful
  */
-function commerce_fatzebra_response_process($response, $order_id, $payment_method) {
+function commerce_fatzebra_response_process($response, $order_id, $payment_method, $transaction = null) {
 
   $process_result = TRUE;
 
-  // Create a new transaction object for the current order.
-  $transaction = commerce_payment_transaction_new('commerce_fatzebra', $order_id);
+  if (!isset($transaction)) {
+    // Create a new transaction object for the current order.
+    $transaction = commerce_payment_transaction_new('commerce_fatzebra', $order_id);
+  }
 
   // Set the message that will be recorded for this transaction.
   $transaction->message = 'Transaction @status: @statusdetail.';
@@ -187,9 +216,14 @@ function commerce_fatzebra_order_red_data($order, $form) {
   global $base_url;
   libraries_load('fatzebra_php');
 
+  $device_id = null;
+  if (isset($form['device_id'])) {
+    $device_id = $form['device_id'];
+  }
+
   $fraud = array(
     'website' => $base_url,
-    'device_id' => $form['device_id']
+    'device_id' => $device_id
   );
 
   $order = entity_metadata_wrapper('commerce_order', $order);

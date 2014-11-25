@@ -67,7 +67,7 @@ function commerce_fatzebra_libraries_info() {
     'files' => array(
       'php' => array(
         'FatZebra.class.php',
-        'cacert.pem',
+        'ca-bundle.crt',
       ),
     ),
   );
@@ -262,9 +262,11 @@ function commerce_fatzebra_submit_form_validate($payment_method, $pane_form, $pa
 function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane_values, &$order, $charge) {
 
   module_load_include('inc', 'commerce_fatzebra', 'commerce_fatzebra');
-
+  $transaction = commerce_payment_transaction_new('commerce_fatzebra', $order->order_id);
+  $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;  
+  commerce_payment_transaction_save($transaction);
   $amount = commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']);
-  $reference = $order->order_id . "-" . time();
+  $reference = $order->order_id . "-" . $transaction->transaction_id;
 
   // Merge settings form default values in case user has never saved settings.
   $payment_method['settings'] = (array) $payment_method['settings'] + commerce_fatzebra_settings_form_default_values();
@@ -296,7 +298,7 @@ function commerce_fatzebra_submit_form_submit($payment_method, $pane_form, $pane
     $purchase_response = commerce_fatzebra_purchase($purchase_request_values, $payment_method['settings']);
   }
 
-  $process_result = commerce_fatzebra_response_process($purchase_response, $order->order_id, $payment_method);
+  $process_result = commerce_fatzebra_response_process($purchase_response, $order->order_id, $payment_method, $transaction);
 
   if ($process_result !== TRUE) {
     drupal_set_message(check_plain($process_result), 'error');
