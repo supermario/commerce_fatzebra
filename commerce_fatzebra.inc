@@ -216,9 +216,14 @@ function commerce_fatzebra_order_red_data($order, $form) {
   global $base_url;
   libraries_load('fatzebra_php');
 
+  $device_id = null;
+  if (isset($form['device_id'])) {
+    $device_id = $form['device_id'];
+  }
+
   $fraud = array(
     'website' => $base_url,
-    'device_id' => $form['device_id']
+    'device_id' => $device_id
   );
 
   $order = entity_metadata_wrapper('commerce_order', $order);
